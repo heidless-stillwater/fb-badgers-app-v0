@@ -26,7 +26,7 @@ import SidebarNav from './components/sidebar-nav';
 import FileBrowser from './components/file-browser';
 import { Logo } from './components/logo';
 import { Button } from '@/components/ui/button';
-import { Upload, FolderPlus } from 'lucide-react';
+import { Upload, FolderPlus, Loader } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -44,6 +44,7 @@ export default function DrivePage() {
   const [currentFolderId, setCurrentFolderId] = useState('root');
   const [newFolderName, setNewFolderName] = useState('');
   const [isCreateFolderOpen, setCreateFolderOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -100,6 +101,7 @@ export default function DrivePage() {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0 && currentFolder) {
+      setIsUploading(true);
       const file = files[0];
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -119,7 +121,16 @@ export default function DrivePage() {
           title: 'Success',
           description: `File "${file.name}" uploaded.`,
         });
+        setIsUploading(false);
       };
+      reader.onerror = () => {
+        toast({
+            title: 'Error',
+            description: 'Failed to read file.',
+            variant: 'destructive',
+        });
+        setIsUploading(false);
+      }
       reader.readAsDataURL(file);
     }
     if (fileInputRef.current) {
@@ -155,15 +166,21 @@ export default function DrivePage() {
             <Button
               className="w-full justify-start"
               onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
             >
-              <Upload className="mr-2 h-4 w-4" />
-              Upload File
+              {isUploading ? (
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="mr-2 h-4 w-4" />
+              )}
+              {isUploading ? 'Uploading...' : 'Upload File'}
             </Button>
             <input
               type="file"
               ref={fileInputRef}
               onChange={handleFileUpload}
               className="hidden"
+              disabled={isUploading}
             />
             <Button
               variant="secondary"
