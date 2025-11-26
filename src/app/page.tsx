@@ -26,7 +26,7 @@ import SidebarNav from './components/sidebar-nav';
 import FileBrowser from './components/file-browser';
 import { Logo } from './components/logo';
 import { Button } from '@/components/ui/button';
-import { Upload, FolderPlus, Loader } from 'lucide-react';
+import { Upload, FolderPlus, Loader, List, Grid, LayoutGrid } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -36,9 +36,24 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
+  } from "@/components/ui/dropdown-menu"
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ModeToggle } from '@/components/mode-toggle';
+
+export type ViewType = "list" | "grid";
+export type GridSize = "sm" | "md" | "lg";
 
 export default function DrivePage() {
   const [fileSystem, setFileSystem] = useState<FolderItem>(initialFileSystem);
@@ -46,6 +61,8 @@ export default function DrivePage() {
   const [newFolderName, setNewFolderName] = useState('');
   const [isCreateFolderOpen, setCreateFolderOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [view, setView] = useState<ViewType>("grid");
+  const [gridSize, setGridSize] = useState<GridSize>("md");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -204,10 +221,29 @@ export default function DrivePage() {
         <div className="flex flex-col h-screen bg-background">
           <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
             <SidebarTrigger />
-            <h1 className="text-lg font-semibold md:text-xl flex-1">
+            <h1 className="text-lg font-semibold md:text-xl flex-1 truncate">
               {currentFolder?.name || 'My Drive'}
             </h1>
-            <ModeToggle />
+            <div className="flex items-center gap-2">
+                <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('list')}>
+                    <List className="h-4 w-4" />
+                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant={view === 'grid' ? 'secondary' : 'ghost'} size="icon">
+                            <Grid className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuRadioGroup value={gridSize} onValueChange={(value) => { setView('grid'); setGridSize(value as GridSize); }}>
+                            <DropdownMenuRadioItem value="sm">Small</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="md">Medium</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="lg">Large</DropdownMenuRadioItem>
+                        </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                <ModeToggle />
+            </div>
           </header>
           <main className="flex-1 overflow-y-auto">
             {currentFolder ? (
@@ -217,6 +253,8 @@ export default function DrivePage() {
                 onNavigate={setCurrentFolderId}
                 onDeleteItem={handleDeleteItem}
                 onRenameItem={handleRenameItem}
+                view={view}
+                gridSize={gridSize}
               />
             ) : (
               <div className="flex h-full items-center justify-center">

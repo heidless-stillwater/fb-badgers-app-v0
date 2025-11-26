@@ -9,6 +9,8 @@ import {
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -60,6 +62,8 @@ import { FileIcon } from './file-icon';
 import { useToast } from '@/hooks/use-toast';
 import { ClientDate } from './client-date';
 import Image from 'next/image';
+import type { ViewType, GridSize } from '../page';
+import { cn } from '@/lib/utils';
 
 interface FileBrowserProps {
   folder: FolderType;
@@ -67,16 +71,18 @@ interface FileBrowserProps {
   onNavigate: (folderId: string) => void;
   onDeleteItem: (itemId: string, itemName: string) => void;
   onRenameItem: (itemId: string, newName: string) => void;
+  view: ViewType;
+  gridSize: GridSize;
 }
 
-const FileThumbnail: React.FC<{ file: FileType }> = ({ file }) => {
+const FileThumbnail: React.FC<{ file: FileType; className?: string }> = ({ file, className }) => {
     const extension = file.name.split('.').pop()?.toLowerCase();
     const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
     
     if (file.content && extension && imageExtensions.includes(extension)) {
         const mimeType = extension === 'svg' ? 'image/svg+xml' : `image/${extension}`;
         return (
-            <div className="w-10 h-10 flex items-center justify-center bg-muted rounded-md overflow-hidden">
+            <div className={cn("flex items-center justify-center bg-muted rounded-md overflow-hidden", className)}>
                 <Image
                     src={`data:${mimeType};base64,${file.content}`}
                     alt={file.name}
@@ -88,7 +94,7 @@ const FileThumbnail: React.FC<{ file: FileType }> = ({ file }) => {
         );
     }
 
-    return <FileIcon filename={file.name} className="h-8 w-8" />;
+    return <FileIcon filename={file.name} className={cn("h-8 w-8", className)} />;
 };
 
 
@@ -98,6 +104,8 @@ const FileBrowser: React.FC<FileBrowserProps> = ({
   onNavigate,
   onDeleteItem,
   onRenameItem,
+  view,
+  gridSize
 }) => {
   const [itemToDelete, setItemToDelete] = useState<FileSystemItem | null>(null);
   const [itemToRename, setItemToRename] = useState<FileSystemItem | null>(null);
@@ -167,6 +175,24 @@ const FileBrowser: React.FC<FileBrowserProps> = ({
     }
   }
 
+  const gridClasses = {
+    sm: "grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10",
+    md: "grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8",
+    lg: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6",
+  };
+
+  const thumbClasses = {
+    sm: "h-16 w-16",
+    md: "h-24 w-24",
+    lg: "h-32 w-32",
+  };
+  
+  const iconClasses = {
+    sm: "h-8 w-8",
+    md: "h-12 w-12",
+    lg: "h-16 w-16",
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       <Breadcrumb>
@@ -215,44 +241,61 @@ const FileBrowser: React.FC<FileBrowserProps> = ({
 
       <div>
         <h2 className="text-xl font-semibold mb-4">Files</h2>
-        <Card>
+        {files.length === 0 ? (
+          <Card className="flex items-center justify-center h-24">
+            <p className="text-muted-foreground">No files here.</p>
+          </Card>
+        ) : view === 'list' ? (
+          <Card>
             <Table>
-            <TableHeader>
-                <TableRow>
-                <TableHead className="w-[80px]">Thumbnail</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Last Modified</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {files.length > 0 ? (
-                files.map((file) => (
-                    <TableRow key={file.id}>
-                    <TableCell>
-                        <FileThumbnail file={file} />
-                    </TableCell>
-                    <TableCell className="font-medium">{file.name}</TableCell>
-                    <TableCell>{file.size}</TableCell>
-                    <TableCell>
-                        <ClientDate date={file.modified} format="PPp" fallback={<span>...</span>} />
-                    </TableCell>
-                    <TableCell className="text-right">
-                        <ItemActions item={file} onRename={setItemToRename} onDelete={setItemToDelete} onDownload={handleDownload}/>
-                    </TableCell>
-                    </TableRow>
-                ))
-                ) : (
-                <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                    No files here.
-                    </TableCell>
-                </TableRow>
-                )}
-            </TableBody>
+              <TableHeader>
+                  <TableRow>
+                  <TableHead className="w-[80px]">Thumbnail</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Size</TableHead>
+                  <TableHead>Last Modified</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+              </TableHeader>
+              <TableBody>
+                  {files.map((file) => (
+                      <TableRow key={file.id}>
+                      <TableCell>
+                          <FileThumbnail file={file} className="w-10 h-10"/>
+                      </TableCell>
+                      <TableCell className="font-medium truncate max-w-xs">{file.name}</TableCell>
+                      <TableCell>{file.size}</TableCell>
+                      <TableCell>
+                          <ClientDate date={file.modified} format="PPp" fallback={<span>...</span>} />
+                      </TableCell>
+                      <TableCell className="text-right">
+                          <ItemActions item={file} onRename={setItemToRename} onDelete={setItemToDelete} onDownload={handleDownload}/>
+                      </TableCell>
+                      </TableRow>
+                  ))}
+              </TableBody>
             </Table>
-        </Card>
+          </Card>
+        ) : (
+          <div className={`grid gap-4 ${gridClasses[gridSize]}`}>
+            {files.map(file => (
+                <Card key={file.id} className="group relative flex flex-col justify-between">
+                    <CardHeader className="p-2">
+                        <div className={cn("aspect-square flex items-center justify-center bg-muted rounded-md mb-2", thumbClasses[gridSize])}>
+                            <FileThumbnail file={file} className={cn("object-cover", iconClasses[gridSize])}/>
+                        </div>
+                    </CardHeader>
+                    <CardFooter className="p-2 flex-col items-start">
+                        <CardTitle className="text-sm font-medium truncate w-full">{file.name}</CardTitle>
+                        <CardDescription className="text-xs">{file.size}</CardDescription>
+                    </CardFooter>
+                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <ItemActions item={file} onRename={setItemToRename} onDelete={setItemToDelete} onDownload={handleDownload} />
+                    </div>
+                </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
