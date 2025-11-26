@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useContext, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { AuthContext } from './providers/auth-provider';
 import {
   Sidebar,
   SidebarContent,
@@ -9,6 +11,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
   SidebarSeparator,
+  SidebarFooter,
+  SidebarMenuButton,
 } from '@/components/ui/sidebar';
 import {
   File as FileItem,
@@ -26,7 +30,7 @@ import SidebarNav from './components/sidebar-nav';
 import FileBrowser from './components/file-browser';
 import { Logo } from './components/logo';
 import { Button } from '@/components/ui/button';
-import { Upload, FolderPlus, Loader, List, Grid, LayoutGrid } from 'lucide-react';
+import { Upload, FolderPlus, Loader, List, Grid, LogOut, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -51,11 +55,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ModeToggle } from '@/components/mode-toggle';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 export type ViewType = "list" | "grid";
 export type GridSize = "sm" | "md" | "lg";
 
 export default function DrivePage() {
+  const { user, loading, signOut } = useContext(AuthContext);
+  const router = useRouter();
   const [fileSystem, setFileSystem] = useState<FolderItem>(initialFileSystem);
   const [currentFolderId, setCurrentFolderId] = useState('root');
   const [newFolderName, setNewFolderName] = useState('');
@@ -65,6 +73,13 @@ export default function DrivePage() {
   const [gridSize, setGridSize] = useState<GridSize>("md");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
 
   const currentFolder = useMemo(
     () => findFolder(fileSystem, currentFolderId),
@@ -173,6 +188,14 @@ export default function DrivePage() {
     });
   }, [toast]);
 
+  if (loading || !user) {
+    return (
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+            <Loader className="h-8 w-8 animate-spin text-primary" />
+        </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon">
@@ -216,6 +239,12 @@ export default function DrivePage() {
             onSelectFolder={setCurrentFolderId}
           />
         </SidebarContent>
+        <SidebarFooter>
+            <SidebarMenuButton onClick={signOut} tooltip="Sign Out">
+                <LogOut/>
+                <span>Sign Out</span>
+            </SidebarMenuButton>
+        </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col h-screen bg-background">
@@ -224,7 +253,7 @@ export default function DrivePage() {
             <h1 className="text-lg font-semibold md:text-xl flex-1 truncate">
               {currentFolder?.name || 'My Drive'}
             </h1>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
                 <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('list')}>
                     <List className="h-4 w-4" />
                 </Button>
@@ -243,6 +272,23 @@ export default function DrivePage() {
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <ModeToggle />
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-full">
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={user.photoURL || undefined} />
+                                <AvatarFallback>
+                                    <User />
+                                </AvatarFallback>
+                            </Avatar>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={signOut}>Sign Out</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
           </header>
           <main className="flex-1 overflow-y-auto">
