@@ -59,6 +59,7 @@ import { Folder, MoreVertical, FilePenLine, Trash2, Download } from 'lucide-reac
 import { FileIcon } from './file-icon';
 import { useToast } from '@/hooks/use-toast';
 import { ClientDate } from './client-date';
+import Image from 'next/image';
 
 interface FileBrowserProps {
   folder: FolderType;
@@ -67,6 +68,29 @@ interface FileBrowserProps {
   onDeleteItem: (itemId: string, itemName: string) => void;
   onRenameItem: (itemId: string, newName: string) => void;
 }
+
+const FileThumbnail: React.FC<{ file: FileType }> = ({ file }) => {
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+    
+    if (file.content && extension && imageExtensions.includes(extension)) {
+        const mimeType = extension === 'svg' ? 'image/svg+xml' : `image/${extension}`;
+        return (
+            <div className="w-10 h-10 flex items-center justify-center bg-muted rounded-md overflow-hidden">
+                <Image
+                    src={`data:${mimeType};base64,${file.content}`}
+                    alt={file.name}
+                    width={40}
+                    height={40}
+                    className="object-cover w-full h-full"
+                />
+            </div>
+        );
+    }
+
+    return <FileIcon filename={file.name} className="h-8 w-8" />;
+};
+
 
 const FileBrowser: React.FC<FileBrowserProps> = ({
   folder,
@@ -104,7 +128,23 @@ const FileBrowser: React.FC<FileBrowserProps> = ({
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+      
+      const extension = file.name.split('.').pop()?.toLowerCase() || '';
+      const mimeTypes: {[key: string]: string} = {
+          'jpg': 'image/jpeg',
+          'jpeg': 'image/jpeg',
+          'png': 'image/png',
+          'gif': 'image/gif',
+          'svg': 'image/svg+xml',
+          'webp': 'image/webp',
+          'pdf': 'application/pdf',
+          'zip': 'application/zip',
+          'mp4': 'video/mp4',
+          'mp3': 'audio/mpeg',
+          'txt': 'text/plain',
+      };
+      
+      const blob = new Blob([byteArray], { type: mimeTypes[extension] || 'application/octet-stream' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -179,7 +219,7 @@ const FileBrowser: React.FC<FileBrowserProps> = ({
             <Table>
             <TableHeader>
                 <TableRow>
-                <TableHead className="w-[80px]">Icon</TableHead>
+                <TableHead className="w-[80px]">Thumbnail</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Size</TableHead>
                 <TableHead>Last Modified</TableHead>
@@ -191,7 +231,7 @@ const FileBrowser: React.FC<FileBrowserProps> = ({
                 files.map((file) => (
                     <TableRow key={file.id}>
                     <TableCell>
-                        <FileIcon filename={file.name} className="h-6 w-6" />
+                        <FileThumbnail file={file} />
                     </TableCell>
                     <TableCell className="font-medium">{file.name}</TableCell>
                     <TableCell>{file.size}</TableCell>
