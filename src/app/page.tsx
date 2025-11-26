@@ -9,8 +9,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
   SidebarSeparator,
-  SidebarMenu,
-  SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import {
   File as FileItem,

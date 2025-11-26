@@ -3,14 +3,11 @@
 import React, { useState } from 'react';
 import type { Folder } from '../lib/data';
 import {
-  SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenuSub,
-  SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { Folder as FolderIcon, ChevronRight } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -62,14 +59,13 @@ const FolderTree: React.FC<FolderTreeProps> = ({
         <CollapsibleContent>
             <SidebarMenuSub className="pl-6">
                 {subFolders.map((subFolder) => (
-                <SidebarMenuSubItem key={subFolder.id}>
                     <FolderTree
+                        key={subFolder.id}
                         folder={subFolder}
                         currentFolderId={currentFolderId}
                         onSelectFolder={onSelectFolder}
                         level={level + 1}
                     />
-                </SidebarMenuSubItem>
                 ))}
             </SidebarMenuSub>
         </CollapsibleContent>
@@ -90,13 +86,13 @@ const SidebarNav: React.FC<SidebarNavProps> = ({
   onSelectFolder,
 }) => {
   return (
-    <SidebarMenu>
+    <div className="flex w-full min-w-0 flex-col gap-1 px-2">
       <FolderTree
         folder={root}
         currentFolderId={currentFolderId}
         onSelectFolder={onSelectFolder}
       />
-    </SidebarMenu>
+    </div>
   );
 };
 
