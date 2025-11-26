@@ -96,11 +96,19 @@ const FileBrowser: React.FC<FileBrowserProps> = ({
   }
 
   const handleDownload = (file: FileType) => {
+    const blob = new Blob([file.content || ''], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
     toast({
-        title: 'Simulating Download',
-        description: `Downloading "${file.name}"... (this is a demo).`
+        title: 'Download Started',
+        description: `Downloading "${file.name}"...`
     });
-    console.log(`Downloading ${file.name}`);
   }
 
   return (
@@ -171,7 +179,7 @@ const FileBrowser: React.FC<FileBrowserProps> = ({
                     </TableCell>
                     <TableCell className="font-medium">{file.name}</TableCell>
                     <TableCell>{file.size}</TableCell>
-                    <TableCell><ClientDate date={file.modified} format="PPp" /></TableCell>
+                    <TableCell><ClientDate date={file.modified} format="PPp" fallback={file.modified.toLocaleString()} /></TableCell>
                     <TableCell className="text-right">
                         <ItemActions item={file} onRename={setItemToRename} onDelete={setItemToDelete} onDownload={handleDownload}/>
                     </TableCell>

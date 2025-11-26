@@ -27,6 +27,11 @@ export function ClientDate({ date, format: formatStr, options, fallback = null }
     return <>{format(dateObj, formatStr, options)}</>;
   } catch (error) {
     console.error("Error formatting date:", error);
-    return fallback;
+    // Render fallback if date is invalid
+    if (fallback) {
+      return fallback;
+    }
+    // Or render the original string if it's a valid date string that format() couldn't handle
+    return <>{date.toString()}</>;
   }
 }

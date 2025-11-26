@@ -4,6 +4,7 @@ export interface File {
   size: string;
   modified: Date;
   type: 'file';
+  content?: string;
 }
 
 export interface Folder {
@@ -31,6 +32,7 @@ export const initialFileSystem: Folder = {
           size: '2.3 MB',
           modified: new Date('2023-10-01T10:00:00Z'),
           type: 'file',
+          content: 'This is the project proposal.',
         },
         {
           id: 'file-1-2',
@@ -38,6 +40,7 @@ export const initialFileSystem: Folder = {
           size: '800 KB',
           modified: new Date('2023-09-15T14:30:00Z'),
           type: 'file',
+          content: 'Financial data here.',
         },
       ],
     },
@@ -57,6 +60,7 @@ export const initialFileSystem: Folder = {
               size: '4.5 MB',
               modified: new Date('2023-07-20T19:45:00Z'),
               type: 'file',
+              content: 'Fake image data for beach-sunset.jpg',
             },
             {
               id: 'file-2-1-2',
@@ -64,6 +68,7 @@ export const initialFileSystem: Folder = {
               size: '6.1 MB',
               modified: new Date('2023-07-22T11:20:00Z'),
               type: 'file',
+              content: 'Fake image data for mountain-hike.png',
             },
           ],
         },
@@ -73,6 +78,7 @@ export const initialFileSystem: Folder = {
           size: '1.2 MB',
           modified: new Date('2023-05-10T08:00:00Z'),
           type: 'file',
+          content: 'Fake image data for profile-pic.jpeg',
         },
       ],
     },
@@ -88,6 +94,7 @@ export const initialFileSystem: Folder = {
       size: '12 KB',
       modified: new Date('2023-11-05T12:00:00Z'),
       type: 'file',
+      content: 'These are some random notes.',
     },
     {
       id: 'file-2',
@@ -95,6 +102,7 @@ export const initialFileSystem: Folder = {
       size: '45 KB',
       modified: new Date('2023-11-02T16:00:00Z'),
       type: 'file',
+      content: '<svg><rect x="10" y="10" height="100" width="100" style="fill: #0000ff"/></svg>',
     },
     {
       id: 'file-3',
@@ -102,6 +110,7 @@ export const initialFileSystem: Folder = {
       size: '128 MB',
       modified: new Date('2023-10-28T09:00:00Z'),
       type: 'file',
+      content: 'Fake video data',
     },
   ],
 };
