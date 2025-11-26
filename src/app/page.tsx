@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ModeToggle } from '@/components/mode-toggle';
 
 export default function DrivePage() {
   const [fileSystem, setFileSystem] = useState<FolderItem>(initialFileSystem);
@@ -203,9 +204,10 @@ export default function DrivePage() {
         <div className="flex flex-col h-screen bg-background">
           <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
             <SidebarTrigger />
-            <h1 className="text-lg font-semibold md:text-xl">
+            <h1 className="text-lg font-semibold md:text-xl flex-1">
               {currentFolder?.name || 'My Drive'}
             </h1>
+            <ModeToggle />
           </header>
           <main className="flex-1 overflow-y-auto">
             {currentFolder ? (
