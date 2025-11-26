@@ -179,7 +179,9 @@ const FileBrowser: React.FC<FileBrowserProps> = ({
                     </TableCell>
                     <TableCell className="font-medium">{file.name}</TableCell>
                     <TableCell>{file.size}</TableCell>
-                    <TableCell><ClientDate date={file.modified} format="PPp" fallback={file.modified.toLocaleString()} /></TableCell>
+                    <TableCell>
+                        <ClientDate date={file.modified} format="PPp" fallback={<span>...</span>} />
+                    </TableCell>
                     <TableCell className="text-right">
                         <ItemActions item={file} onRename={setItemToRename} onDelete={setItemToDelete} onDownload={handleDownload}/>
                     </TableCell>
