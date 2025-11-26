@@ -101,20 +101,26 @@ export default function DrivePage() {
     const files = event.target.files;
     if (files && files.length > 0 && currentFolder) {
       const file = files[0];
-      const newFile: FileItem = {
-        id: `file-${Date.now()}`,
-        name: file.name,
-        size: `${(file.size / 1024).toFixed(2)} KB`,
-        modified: new Date(),
-        type: 'file',
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const fileContent = (e.target?.result as string).split(',')[1];
+        const newFile: FileItem = {
+          id: `file-${Date.now()}`,
+          name: file.name,
+          size: `${(file.size / 1024).toFixed(2)} KB`,
+          modified: new Date(),
+          type: 'file',
+          content: fileContent,
+        };
+        setFileSystem(
+          (prevFs) => addToFileSystem(prevFs, currentFolder.id, newFile) as FolderItem
+        );
+        toast({
+          title: 'Success',
+          description: `File "${file.name}" uploaded.`,
+        });
       };
-      setFileSystem(
-        (prevFs) => addToFileSystem(prevFs, currentFolder.id, newFile) as FolderItem
-      );
-      toast({
-        title: 'Success',
-        description: `File "${file.name}" uploaded.`,
-      });
+      reader.readAsDataURL(file);
     }
     if (fileInputRef.current) {
         fileInputRef.current.value = '';

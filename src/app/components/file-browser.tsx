@@ -96,19 +96,35 @@ const FileBrowser: React.FC<FileBrowserProps> = ({
   }
 
   const handleDownload = (file: FileType) => {
-    const blob = new Blob([file.content || ''], { type: 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file.name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({
-        title: 'Download Started',
-        description: `Downloading "${file.name}"...`
-    });
+    try {
+      const base64Content = file.content || '';
+      const byteCharacters = atob(base64Content);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast({
+          title: 'Download Started',
+          description: `Downloading "${file.name}"...`
+      });
+    } catch (error) {
+        console.error("Download failed:", error);
+        toast({
+            title: 'Download Failed',
+            description: `Could not download "${file.name}". The file content may be corrupted.`,
+            variant: 'destructive',
+        });
+    }
   }
 
   return (
