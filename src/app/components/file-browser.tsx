@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { format } from 'date-fns';
 import {
   Folder as FolderType,
   File as FileType,
@@ -59,6 +58,7 @@ import { Label } from '@/components/ui/label';
 import { Folder, MoreVertical, FilePenLine, Trash2, Download } from 'lucide-react';
 import { FileIcon } from './file-icon';
 import { useToast } from '@/hooks/use-toast';
+import { ClientDate } from './client-date';
 
 interface FileBrowserProps {
   folder: FolderType;
@@ -171,7 +171,7 @@ const FileBrowser: React.FC<FileBrowserProps> = ({
                     </TableCell>
                     <TableCell className="font-medium">{file.name}</TableCell>
                     <TableCell>{file.size}</TableCell>
-                    <TableCell>{format(new Date(file.modified), 'PPp')}</TableCell>
+                    <TableCell><ClientDate date={file.modified} format="PPp" /></TableCell>
                     <TableCell className="text-right">
                         <ItemActions item={file} onRename={setItemToRename} onDelete={setItemToDelete} onDownload={handleDownload}/>
                     </TableCell>
@@ -259,7 +259,7 @@ const ItemActions: React.FC<ItemActionsProps> = ({ item, onRename, onDelete, onD
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 {item.type === 'file' && onDownload && (
-                    <DropdownMenuItem onClick={() => onDownload(item)}>
+                    <DropdownMenuItem onClick={() => onDownload(item as FileType)}>
                         <Download className="mr-2 h-4 w-4" />
                         <span>Download</span>
                     </DropdownMenuItem>
